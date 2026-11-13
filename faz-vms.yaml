@@ -1,0 +1,91 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: faz-vm-poc-1
+  namespace: ca-van3-01-socaas
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: faz-vm-poc-1
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        resources:
+          requests:
+            memory: 16Gi
+        devices:
+          disks:
+            - name: system-disk
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: ha-disk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default-net
+              masquerade: {}
+            - name: ha-net
+              bridge: {}
+      networks:
+        - name: default-net
+          pod: {}
+        - name: ha-net
+          multus:
+            networkName: nad-soc-ha
+      volumes:
+        - name: system-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-1-system-disk
+        - name: ha-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-1-ha-disk
+---
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: faz-vm-poc-2
+  namespace: ca-van3-01-socaas
+spec:
+  running: true
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: faz-vm-poc-2
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        resources:
+          requests:
+            memory: 16Gi
+        devices:
+          disks:
+            - name: system-disk
+              disk:
+                bus: virtio
+              bootOrder: 1
+            - name: ha-disk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default-net
+              masquerade: {}
+            - name: ha-net
+              bridge: {}
+      networks:
+        - name: default-net
+          pod: {}
+        - name: ha-net
+          multus:
+            networkName: nad-soc-ha
+      volumes:
+        - name: system-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-2-system-disk
+        - name: ha-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-2-ha-disk

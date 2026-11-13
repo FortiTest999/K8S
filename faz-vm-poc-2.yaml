@@ -1,0 +1,70 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: faz-vm-poc-2
+  namespace: ca-van3-01-socaas
+  labels:
+    app: faz-poc-2
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: faz-vm-poc-2-boot
+      spec:
+        source:
+          pvc:
+            name: image.iso
+            namespace: ca-van3-01-socaas
+        storage:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: ceph-block
+          volumeMode: Block
+  template:
+    metadata:
+      labels:
+        app: faz-poc-2
+        kubevirt.io/domain: faz-vm-poc-2
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        machine:
+          type: q35
+        resources:
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+          limits:
+            cpu: "4"
+            memory: "16Gi"
+        devices:
+          disks:
+            - name: boot
+              bootOrder: 1
+              disk:
+                bus: virtio
+            - name: data-disk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+            - name: ha-net
+              bridge: {}
+      networks:
+        - name: default
+          pod: {}
+        - name: ha-net
+          multus:
+            networkName: nad-soc-ha
+      volumes:
+        - name: boot
+          dataVolume:
+            name: faz-vm-poc-2-boot
+        - name: data-disk
+          persistentVolumeClaim:
+            claimName: fortianalyzer-data-fortianalyzer-poc-2-0

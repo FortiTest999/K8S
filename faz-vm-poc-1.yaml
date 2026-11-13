@@ -1,0 +1,53 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: faz-vm-poc-1
+  namespace: ca-van3-01-socaas
+  resourceVersion: "155076299"
+spec:
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: faz-vm-poc-1
+    spec:
+      domain:
+        cpu:
+          cores: 4
+        devices:
+          disks:
+            - bootOrder: 1
+              cdrom:
+                bus: sata
+              name: iso-disk
+            - bootOrder: 2
+              disk:
+                bus: virtio
+              name: system-disk
+            - disk:
+                bus: virtio
+              name: ha-disk
+          interfaces:
+            - masquerade: {}
+              name: default-net
+            - bridge: {}
+              name: ha-net
+        resources:
+          requests:
+            memory: 16Gi
+      networks:
+        - name: default-net
+          pod: {}
+        - multus:
+            networkName: nad-soc-ha
+          name: ha-net
+      volumes:
+        - name: iso-disk
+          persistentVolumeClaim:
+            claimName: faz.iso
+        - name: system-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-1-system-disk
+        - name: ha-disk
+          persistentVolumeClaim:
+            claimName: faz-vm-poc-1-ha-disk
